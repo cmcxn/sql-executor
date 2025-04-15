@@ -216,17 +216,27 @@ public class FileTreePanel extends JPanel {
 
     // 自定义的树节点渲染器，用于显示复选框
     private class CheckboxTreeCellRenderer extends DefaultTreeCellRenderer {
-        private JCheckBox checkbox = new JCheckBox();
+        private final JPanel panel = new JPanel();
+        private final JCheckBox checkbox = new JCheckBox();
+        private final JLabel label = new JLabel();
 
         public CheckboxTreeCellRenderer() {
-            checkbox.setOpaque(false);
+            panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+            panel.add(checkbox);
+            panel.add(Box.createHorizontalStrut(4)); // 添加一些间距
+            panel.add(label);
+            panel.setOpaque(false);
+
+            // 禁用复选框的焦点，让它不接收焦点状态
+            checkbox.setFocusable(false);
         }
 
         @Override
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
                                                       boolean expanded, boolean leaf, int row, boolean hasFocus) {
-            Component renderer = super.getTreeCellRendererComponent(
-                    tree, value, selected, expanded, leaf, row, hasFocus);
+
+            // 获取默认渲染状态以更新颜色
+            super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 
             if (value instanceof DefaultMutableTreeNode) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
@@ -235,17 +245,39 @@ public class FileTreePanel extends JPanel {
                 if (userObject instanceof FileNode) {
                     FileNode fileNode = (FileNode) userObject;
 
+                    // 设置复选框状态
                     checkbox.setSelected(fileNode.isSelected());
-                    checkbox.setText(fileNode.getFile().getName());
-                    checkbox.setFont(renderer.getFont());
-                    checkbox.setForeground(renderer.getForeground());
-                    checkbox.setBackground(renderer.getBackground());
-                    checkbox.setEnabled(tree.isEnabled());
-                    return checkbox;
+
+                    // 设置文件名标签
+                    label.setText(fileNode.getFile().getName());
+
+                    // 复制背景色和前景色到panel及其组件
+                    Color bg = selected ? getBackgroundSelectionColor() : getBackgroundNonSelectionColor();
+                    Color fg = selected ? getTextSelectionColor() : getTextNonSelectionColor();
+
+                    // 确保选中状态有合适的颜色
+                    panel.setOpaque(true);
+                    panel.setBackground(bg);
+
+                    // 设置文本颜色
+                    label.setForeground(fg);
+                    checkbox.setForeground(fg);
+
+                    // 设置图标
+                    if (fileNode.isDirectory()) {
+                        label.setIcon(expanded ? getOpenIcon() : getClosedIcon());
+                    } else {
+                        label.setIcon(getLeafIcon());
+                    }
+
+                    // 设置字体
+                    label.setFont(getFont());
+
+                    return panel;
                 }
             }
 
-            return renderer;
+            return this;
         }
     }
 }
