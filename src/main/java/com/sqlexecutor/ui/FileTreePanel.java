@@ -30,37 +30,24 @@ public class FileTreePanel extends JPanel {
     private void initializeUI() {
         rootNode = new DefaultMutableTreeNode("SQL Files");
         treeModel = new DefaultTreeModel(rootNode);
-        fileTree = new JTree(treeModel) {
-            @Override
-            public String convertValueToText(Object value, boolean selected, boolean expanded, 
-                                           boolean leaf, int row, boolean hasFocus) {
-                if (value instanceof DefaultMutableTreeNode) {
-                    Object userObject = ((DefaultMutableTreeNode)value).getUserObject();
-                    if (userObject instanceof FileNode) {
-                        return ((FileNode)userObject).getFile().getName();
-                    }
-                }
-                return super.convertValueToText(value, selected, expanded, leaf, row, hasFocus);
-            }
-        };
-        
+        fileTree = new JTree(treeModel);
+
+        // 设置自定义渲染器
         fileTree.setCellRenderer(new CheckboxTreeCellRenderer());
-        fileTree.setCellEditor(new CheckboxTreeCellEditor(fileTree));
-        fileTree.setEditable(true);
-        
+
         fileTree.addTreeSelectionListener(new TreeSelectionListener() {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode)
                         fileTree.getLastSelectedPathComponent();
-                
+
                 if (node == null) return;
-                
+
                 Object userObject = node.getUserObject();
                 if (userObject instanceof FileNode) {
                     FileNode fileNode = (FileNode)userObject;
                     File file = fileNode.getFile();
-                    
+
                     // Notify listeners only for file selections (not directories)
                     if (!file.isDirectory()) {
                         for (Consumer<File> listener : fileSelectionListeners) {
@@ -70,15 +57,15 @@ public class FileTreePanel extends JPanel {
                 }
             }
         });
-        
+
         fileTree.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int row = fileTree.getRowForLocation(e.getX(), e.getY());
                 if(row < 0) return;
-                
+
                 Rectangle rowBounds = fileTree.getRowBounds(row);
-                // Calculate checkbox bounds to detect click on checkbox area
+                // 检测点击是否在复选框区域
                 int checkboxWidth = 20;
                 if (e.getX() < (rowBounds.x + checkboxWidth)) {
                     TreePath path = fileTree.getPathForRow(row);
@@ -86,46 +73,46 @@ public class FileTreePanel extends JPanel {
                     if (node.getUserObject() instanceof FileNode) {
                         FileNode fileNode = (FileNode)node.getUserObject();
                         fileNode.setSelected(!fileNode.isSelected());
-                        
-                        // If it's a directory, toggle all children
+
+                        // 如果是目录，递归设置所有子项的选择状态
                         if (fileNode.getFile().isDirectory()) {
                             toggleChildren(node, fileNode.isSelected());
                         }
-                        
-                        // Repaint to show the updated checkbox state
+
+                        // 重绘树以显示更新后的复选框状态
                         fileTree.repaint();
                     }
                 }
             }
         });
-        
+
         add(new JScrollPane(fileTree), BorderLayout.CENTER);
     }
-    
+
     public void loadFolder(File folder) {
         this.currentFolder = folder;
         rootNode.removeAllChildren();
-        
+
         DefaultMutableTreeNode folderNode = new DefaultMutableTreeNode(
                 new FileNode(folder, false, true));
         rootNode.add(folderNode);
-        
+
         loadFilesIntoNode(folder, folderNode);
-        
-        // Expand the tree to show the structure
+
+        // 展开树以显示结构
         treeModel.reload();
         for (int i = 0; i < fileTree.getRowCount(); i++) {
             fileTree.expandRow(i);
         }
     }
-    
+
     private void loadFilesIntoNode(File folder, DefaultMutableTreeNode node) {
-        File[] files = folder.listFiles(file -> 
-            file.isDirectory() || file.getName().toLowerCase().endsWith(".sql"));
-        
+        File[] files = folder.listFiles(file ->
+                file.isDirectory() || file.getName().toLowerCase().endsWith(".sql"));
+
         if (files == null) return;
-        
-        // Sort files: directories first, then alphabetically
+
+        // 排序文件：目录优先，然后按字母顺序
         Arrays.sort(files, new Comparator<File>() {
             @Override
             public int compare(File f1, File f2) {
@@ -138,145 +125,127 @@ public class FileTreePanel extends JPanel {
                 }
             }
         });
-        
+
         for (File file : files) {
             FileNode fileNode = new FileNode(file, false, file.isDirectory());
             DefaultMutableTreeNode fileTreeNode = new DefaultMutableTreeNode(fileNode);
             node.add(fileTreeNode);
-            
+
             if (file.isDirectory()) {
                 loadFilesIntoNode(file, fileTreeNode);
             }
         }
     }
-    
+
     private void toggleChildren(DefaultMutableTreeNode node, boolean selected) {
         for (int i = 0; i < node.getChildCount(); i++) {
             DefaultMutableTreeNode child = (DefaultMutableTreeNode) node.getChildAt(i);
             if (child.getUserObject() instanceof FileNode) {
                 FileNode childFileNode = (FileNode) child.getUserObject();
                 childFileNode.setSelected(selected);
-                
-                // Recursively toggle all children
+
+                // 递归设置所有子项
                 if (childFileNode.getFile().isDirectory()) {
                     toggleChildren(child, selected);
                 }
             }
         }
     }
-    
+
     public List<File> getSelectedFiles() {
         List<File> selectedFiles = new ArrayList<>();
         collectSelectedFiles(rootNode, selectedFiles);
         return selectedFiles;
     }
-    
+
     private void collectSelectedFiles(DefaultMutableTreeNode node, List<File> selectedFiles) {
         int childCount = node.getChildCount();
-        
+
         for (int i = 0; i < childCount; i++) {
             DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) node.getChildAt(i);
             Object userObject = childNode.getUserObject();
-            
+
             if (userObject instanceof FileNode) {
                 FileNode fileNode = (FileNode) userObject;
                 if (fileNode.isSelected() && !fileNode.getFile().isDirectory()) {
                     selectedFiles.add(fileNode.getFile());
                 }
             }
-            
+
             collectSelectedFiles(childNode, selectedFiles);
         }
     }
-    
+
     public void addFileSelectionListener(Consumer<File> listener) {
         fileSelectionListeners.add(listener);
     }
-    
-    // Class to hold file data and selection state
+
+    // 保存文件数据和选择状态的类
     private static class FileNode {
         private File file;
         private boolean selected;
         private boolean isDirectory;
-        
+
         public FileNode(File file, boolean selected, boolean isDirectory) {
             this.file = file;
             this.selected = selected;
             this.isDirectory = isDirectory;
         }
-        
+
         public File getFile() {
             return file;
         }
-        
+
         public boolean isSelected() {
             return selected;
         }
-        
+
         public void setSelected(boolean selected) {
             this.selected = selected;
         }
-        
+
         public boolean isDirectory() {
             return isDirectory;
         }
+
+        @Override
+        public String toString() {
+            return file.getName();
+        }
     }
-    
-    // Custom renderer to show checkboxes in the tree
+
+    // 自定义的树节点渲染器，用于显示复选框
     private class CheckboxTreeCellRenderer extends DefaultTreeCellRenderer {
         private JCheckBox checkbox = new JCheckBox();
-        
+
+        public CheckboxTreeCellRenderer() {
+            checkbox.setOpaque(false);
+        }
+
         @Override
-        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, 
-                                                     boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected,
+                                                      boolean expanded, boolean leaf, int row, boolean hasFocus) {
             Component renderer = super.getTreeCellRendererComponent(
                     tree, value, selected, expanded, leaf, row, hasFocus);
-            
+
             if (value instanceof DefaultMutableTreeNode) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
                 Object userObject = node.getUserObject();
-                
+
                 if (userObject instanceof FileNode) {
                     FileNode fileNode = (FileNode) userObject;
+
                     checkbox.setSelected(fileNode.isSelected());
                     checkbox.setText(fileNode.getFile().getName());
-                    checkbox.setOpaque(false);
+                    checkbox.setFont(renderer.getFont());
                     checkbox.setForeground(renderer.getForeground());
                     checkbox.setBackground(renderer.getBackground());
-                    checkbox.setFont(renderer.getFont());
+                    checkbox.setEnabled(tree.isEnabled());
                     return checkbox;
                 }
             }
-            
+
             return renderer;
-        }
-    }
-    
-    // Custom editor to enable checkbox selection
-    private class CheckboxTreeCellEditor extends DefaultCellEditor {
-        private JCheckBox checkbox;
-        
-        public CheckboxTreeCellEditor(JTree tree) {
-            super(new JCheckBox());
-            checkbox = (JCheckBox) getComponent();
-        }
-        
-        @Override
-        public Component getTreeCellEditorComponent(JTree tree, Object value, boolean isSelected,
-                                                   boolean expanded, boolean leaf, int row) {
-            if (value instanceof DefaultMutableTreeNode) {
-                DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-                Object userObject = node.getUserObject();
-                
-                if (userObject instanceof FileNode) {
-                    FileNode fileNode = (FileNode) userObject;
-                    checkbox.setSelected(fileNode.isSelected());
-                    checkbox.setText(fileNode.getFile().getName());
-                    return checkbox;
-                }
-            }
-            
-            return checkbox;
         }
     }
 }
