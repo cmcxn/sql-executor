@@ -1,6 +1,9 @@
 package com.sqlexecutor.ui;
 
 import com.sqlexecutor.model.SQLFile;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
 import javax.swing.text.DefaultEditorKit;
@@ -10,7 +13,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 public class SQLEditorPanel extends JPanel {
-    private JTextArea textArea;
+    private RSyntaxTextArea textArea;
     private JLabel fileNameLabel;
     private SQLFile currentFile;
 
@@ -25,14 +28,19 @@ public class SQLEditorPanel extends JPanel {
         fileNameLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         fileNameLabel.setFont(fileNameLabel.getFont().deriveFont(Font.BOLD));
 
-        // Create text area with monospaced font for code display
-        textArea = new JTextArea(20, 60);
+        // Create RSyntaxTextArea for SQL syntax highlighting
+        textArea = new RSyntaxTextArea(20, 60);
+        textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+        textArea.setCodeFoldingEnabled(true);
+        textArea.setAntiAliasingEnabled(true);
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         textArea.setTabSize(2);
 
-        // Add line wrapping
-        textArea.setLineWrap(false);
-        textArea.setWrapStyleWord(true);
+        // Add SQL-specific enhancements
+        textArea.setMarkOccurrences(true);
+        textArea.setMarkOccurrencesDelay(500);
+        textArea.setPaintTabLines(true);
+        textArea.setAutoIndentEnabled(true);
 
         // Initially set as read-only
         textArea.setEditable(false);
@@ -40,8 +48,9 @@ public class SQLEditorPanel extends JPanel {
         // Add keyboard shortcuts for common operations
         addEditorShortcuts();
 
-        // Create a scrollpane for the editor
-        JScrollPane scrollPane = new JScrollPane(textArea);
+        // Create a RTextScrollPane for the editor (special scrollpane for RSyntaxTextArea)
+        RTextScrollPane scrollPane = new RTextScrollPane(textArea);
+        scrollPane.setFoldIndicatorEnabled(true);
 
         // Build a simple toolbar with buttons
         JToolBar toolbar = new JToolBar();
@@ -133,5 +142,10 @@ public class SQLEditorPanel extends JPanel {
 
     public SQLFile getCurrentFile() {
         return currentFile;
+    }
+
+    // Getter for the text area - can be useful if you need to access it from outside
+    public RSyntaxTextArea getTextArea() {
+        return textArea;
     }
 }
