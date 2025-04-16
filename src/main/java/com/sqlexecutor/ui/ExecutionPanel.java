@@ -1,7 +1,10 @@
 package com.sqlexecutor.ui;
 
+import com.sqlexecutor.ui.i18n.LanguageManager;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 public class ExecutionPanel extends JPanel {
     private JTextArea textArea;
@@ -28,10 +31,11 @@ public class ExecutionPanel extends JPanel {
         // Create toolbar with clear button
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
-        
-        JButton clearButton = new JButton("Clear");
+        //clear_button
+        JButton clearButton = new JButton(LanguageManager.getString("mainwindow.clear_button"));
+        clearButton.setIcon(UIManager.getIcon("html.missingImage"));
         clearButton.addActionListener(e -> clear());
-        
+        clearButton.setMnemonic(KeyEvent.VK_C); // Alt + C
         toolbar.add(clearButton);
         
         // Add components to panel

@@ -1,6 +1,7 @@
 package com.sqlexecutor.ui;
 
 import com.sqlexecutor.model.DatabaseConfig;
+import com.sqlexecutor.ui.i18n.LanguageManager;
 import com.sqlexecutor.util.ConfigManager;
 
 import javax.swing.*;
@@ -19,7 +20,7 @@ public class ConfigDialog extends JDialog {
     private DatabaseConfig databaseConfig;
 
     public ConfigDialog(Frame owner, DatabaseConfig config) {
-        super(owner, "Database Configuration", true);
+        super(owner, LanguageManager.getString("connection.title"), true);
         this.databaseConfig = new DatabaseConfig(
                 config.getHost(),
                 config.getPort(),
@@ -42,7 +43,7 @@ public class ConfigDialog extends JDialog {
         // Host field
         gbc.gridx = 0;
         gbc.gridy = 0;
-        panel.add(new JLabel("Host:"), gbc);
+        panel.add(new JLabel(LanguageManager.getString("connection.host")), gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -53,7 +54,7 @@ public class ConfigDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 0.0;
-        panel.add(new JLabel("Port:"), gbc);
+        panel.add(new JLabel(LanguageManager.getString("connection.port")), gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -64,7 +65,7 @@ public class ConfigDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0.0;
-        panel.add(new JLabel("Username:"), gbc);
+        panel.add(new JLabel(LanguageManager.getString("connection.username")), gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -75,7 +76,7 @@ public class ConfigDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.weightx = 0.0;
-        panel.add(new JLabel("Password:"), gbc);
+        panel.add(new JLabel(LanguageManager.getString("connection.password")), gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -86,7 +87,7 @@ public class ConfigDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.weightx = 0.0;
-        panel.add(new JLabel("Database:"), gbc);
+        panel.add(new JLabel(LanguageManager.getString("connection.database")), gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
@@ -104,14 +105,14 @@ public class ConfigDialog extends JDialog {
         gbc.gridx = 0;
         gbc.gridy = 6;
         gbc.gridwidth = 1;
-        JButton testButton = new JButton("Test Connection");
+        JButton testButton = new JButton(LanguageManager.getString("connection.test"));
         testButton.addActionListener(e -> testConnection());
         panel.add(testButton, gbc);
 
         // Buttons panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton saveButton = new JButton("Save");
-        JButton cancelButton = new JButton("Cancel");
+        JButton saveButton = new JButton(LanguageManager.getString("mainwindow.save"));
+        JButton cancelButton = new JButton(LanguageManager.getString("connection.cancel"));
 
         saveButton.addActionListener(e -> {
             updateDatabaseConfig();
@@ -170,19 +171,19 @@ public class ConfigDialog extends JDialog {
                     boolean success = get();
                     if (success) {
                         JOptionPane.showMessageDialog(ConfigDialog.this,
-                                "Connection successful!",
-                                "Test Connection",
+                                LanguageManager.getString("connection.connection_success"),
+                                LanguageManager.getString("connection.test"),
                                 JOptionPane.INFORMATION_MESSAGE);
                     } else {
                         JOptionPane.showMessageDialog(ConfigDialog.this,
-                                "Connection failed: " + errorMessage,
-                                "Test Connection",
+                                LanguageManager.getString("connection.connection_failed") + errorMessage,
+                                LanguageManager.getString("connection.test"),
                                 JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(ConfigDialog.this,
                             "Error: " + e.getMessage(),
-                            "Test Connection",
+                            LanguageManager.getString("connection.test"),
                             JOptionPane.ERROR_MESSAGE);
                 }
             }

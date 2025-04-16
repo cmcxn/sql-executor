@@ -1,6 +1,7 @@
 package com.sqlexecutor.ui;
 
 import com.sqlexecutor.model.SQLFile;
+import com.sqlexecutor.ui.i18n.LanguageManager;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -81,7 +82,7 @@ public class SQLEditorPanel extends JPanel {
         toolbar.setFloatable(false);
 
         // Add Save button
-        saveButton = new JButton("Save");
+        saveButton = new JButton(LanguageManager.getString("mainwindow.save"));
         saveButton.setIcon(UIManager.getIcon("FileView.floppyDriveIcon"));
         saveButton.setEnabled(false);
         saveButton.addActionListener(e -> saveCurrentFile());
@@ -90,11 +91,11 @@ public class SQLEditorPanel extends JPanel {
         // Add separator
         toolbar.addSeparator();
 
-        JButton copyButton = new JButton("Copy");
+        JButton copyButton = new JButton(LanguageManager.getString("mainwindow.copy"));
         copyButton.setIcon(UIManager.getIcon("FileView.fileIcon"));
         copyButton.addActionListener(e -> textArea.copy());
 
-        JButton wrapButton = new JButton("Toggle Wrap");
+        JButton wrapButton = new JButton(LanguageManager.getString("mainwindow.wrap"));
         wrapButton.setIcon(UIManager.getIcon("FileChooser.detailsViewIcon"));
         wrapButton.addActionListener(e -> textArea.setLineWrap(!textArea.getLineWrap()));
 

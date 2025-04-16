@@ -3,6 +3,7 @@ package com.sqlexecutor.ui;
 import com.sqlexecutor.model.DatabaseConfig;
 import com.sqlexecutor.model.ExecutionResult;
 import com.sqlexecutor.model.SQLFile;
+import com.sqlexecutor.ui.i18n.LanguageManager;
 import com.sqlexecutor.util.ConfigManager;
 import com.sqlexecutor.util.DatabaseManager;
 import com.sqlexecutor.util.FileScanner;
@@ -10,6 +11,7 @@ import com.sqlexecutor.util.SQLExecutor;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,7 +40,7 @@ public class MainFrame extends JFrame {
     }
 
     private void initializeUI() {
-        setTitle("SQL Executor");
+        setTitle(LanguageManager.getString("mainwindow.title"));
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 800);
         setLocationRelativeTo(null);
@@ -79,22 +81,33 @@ public class MainFrame extends JFrame {
         mainSplitPane.setLeftComponent(new JScrollPane(fileTreePanel));
         mainSplitPane.setRightComponent(rightSplitPane);
 
-        // Create toolbar with buttons
+
+// Create toolbar with buttons
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
 
-        configButton = new JButton("Database Config");
+// Database Config Button
+        configButton = new JButton(LanguageManager.getString("mainwindow.configButton"));
+        configButton.setIcon(UIManager.getIcon("FileView.hardDriveIcon"));
+        configButton.setMnemonic(KeyEvent.VK_D); // Alt + D
+        configButton.setToolTipText("Configure database settings (Alt+D)");
         configButton.addActionListener(e -> showConfigDialog());
-
-        JButton openFolderButton = new JButton("Open Folder");
-        openFolderButton.addActionListener(e -> openFolder());
-
-        executeButton = new JButton("Execute Selected");
-
-        executeButton.addActionListener(e -> executeSelectedFiles());
-
         toolbar.add(configButton);
+
+// Open Folder Button
+        JButton openFolderButton = new JButton(LanguageManager.getString("mainwindow.openFolderButton"));
+        openFolderButton.setIcon(UIManager.getIcon("FileView.directoryIcon"));
+        openFolderButton.setMnemonic(KeyEvent.VK_O); // Alt + O
+        openFolderButton.setToolTipText("Open folder (Alt+O)");
+        openFolderButton.addActionListener(e -> openFolder());
         toolbar.add(openFolderButton);
+
+// Execute Selected Button
+        executeButton = new JButton(LanguageManager.getString("mainwindow.executeButton"));
+        executeButton.setIcon(UIManager.getIcon("InternalFrame.icon"));
+        executeButton.setMnemonic(KeyEvent.VK_E); // Alt + E
+        executeButton.setToolTipText("Execute selected files (Alt+E)");
+        executeButton.addActionListener(e -> executeSelectedFiles());
         toolbar.add(executeButton);
 
         // Add components to the frame
