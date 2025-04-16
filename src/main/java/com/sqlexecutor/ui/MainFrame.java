@@ -63,20 +63,21 @@ public class MainFrame extends JFrame {
         // Create toolbar with buttons
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
-        
-        JButton openFolderButton = new JButton("Open Folder");
-        openFolderButton.addActionListener(e -> openFolder());
-        
-        executeButton = new JButton("Execute Selected");
-        executeButton.addActionListener(e -> executeSelectedFiles());
-        
+
         configButton = new JButton("Database Config");
         configButton.addActionListener(e -> showConfigDialog());
-        
+
+        JButton openFolderButton = new JButton("Open Folder");
+        openFolderButton.addActionListener(e -> openFolder());
+
+        executeButton = new JButton("Execute Selected");
+
+        executeButton.addActionListener(e -> executeSelectedFiles());
+
+        toolbar.add(configButton);
         toolbar.add(openFolderButton);
         toolbar.add(executeButton);
-        toolbar.add(configButton);
-        
+
         // Add components to the frame
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(toolbar, BorderLayout.NORTH);

@@ -91,12 +91,17 @@ public class SQLEditorPanel extends JPanel {
         toolbar.addSeparator();
 
         JButton copyButton = new JButton("Copy");
+        copyButton.setIcon(UIManager.getIcon("FileView.fileIcon"));
         copyButton.addActionListener(e -> textArea.copy());
 
         JButton wrapButton = new JButton("Toggle Wrap");
+        wrapButton.setIcon(UIManager.getIcon("FileChooser.detailsViewIcon"));
         wrapButton.addActionListener(e -> textArea.setLineWrap(!textArea.getLineWrap()));
 
         toolbar.add(copyButton);
+        // Add separator
+        toolbar.addSeparator();
+
         toolbar.add(wrapButton);
 
         JPanel topPanel = new JPanel(new BorderLayout());
