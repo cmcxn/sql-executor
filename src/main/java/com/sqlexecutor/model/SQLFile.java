@@ -44,6 +44,10 @@ public class SQLFile {
         return content;
     }
 
+    public void setContent(String content) {
+        this.content = content;
+    }
+
     public String getAbsolutePath() {
         return file.getAbsolutePath();
     }

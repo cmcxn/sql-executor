@@ -6,16 +6,22 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultEditorKit;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class SQLEditorPanel extends JPanel {
     private RSyntaxTextArea textArea;
     private JLabel fileNameLabel;
     private SQLFile currentFile;
+    private boolean modified = false;
+    private JButton saveButton;
 
     public SQLEditorPanel() {
         setLayout(new BorderLayout());
@@ -42,8 +48,26 @@ public class SQLEditorPanel extends JPanel {
         textArea.setPaintTabLines(true);
         textArea.setAutoIndentEnabled(true);
 
-        // Initially set as read-only
-        textArea.setEditable(false);
+        // Add document listener to track modifications
+        textArea.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                setModified(true);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                setModified(true);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                setModified(true);
+            }
+        });
+
+        // Allow editing
+        textArea.setEditable(true);
 
         // Add keyboard shortcuts for common operations
         addEditorShortcuts();
@@ -55,6 +79,16 @@ public class SQLEditorPanel extends JPanel {
         // Build a simple toolbar with buttons
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
+
+        // Add Save button
+        saveButton = new JButton("Save");
+        saveButton.setIcon(UIManager.getIcon("FileView.floppyDriveIcon"));
+        saveButton.setEnabled(false);
+        saveButton.addActionListener(e -> saveCurrentFile());
+        toolbar.add(saveButton);
+
+        // Add separator
+        toolbar.addSeparator();
 
         JButton copyButton = new JButton("Copy");
         copyButton.addActionListener(e -> textArea.copy());
@@ -77,6 +111,19 @@ public class SQLEditorPanel extends JPanel {
     private void addEditorShortcuts() {
         InputMap inputMap = textArea.getInputMap();
         ActionMap actionMap = textArea.getActionMap();
+
+        // Add Ctrl+S (Save)
+        KeyStroke saveKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK);
+        Action saveAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (isModified() && currentFile != null) {
+                    saveCurrentFile();
+                }
+            }
+        };
+        inputMap.put(saveKeyStroke, "save");
+        actionMap.put("save", saveAction);
 
         // Add Ctrl+A (Select All)
         KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK);
@@ -128,16 +175,87 @@ public class SQLEditorPanel extends JPanel {
     }
 
     public void setSqlFile(SQLFile sqlFile) {
-        this.currentFile = sqlFile;
+        if (checkUnsavedChanges()) {
+            this.currentFile = sqlFile;
 
-        if (sqlFile != null) {
-            fileNameLabel.setText(sqlFile.getAbsolutePath());
-            textArea.setText(sqlFile.getContent());
-            textArea.setCaretPosition(0);
-        } else {
-            fileNameLabel.setText("No file selected");
-            textArea.setText("");
+            if (sqlFile != null) {
+                fileNameLabel.setText(sqlFile.getAbsolutePath());
+                textArea.setText(sqlFile.getContent());
+                textArea.setCaretPosition(0);
+                setModified(false);
+            } else {
+                fileNameLabel.setText("No file selected");
+                textArea.setText("");
+                setModified(false);
+            }
         }
+    }
+
+    /**
+     * Checks if there are unsaved changes and prompts the user if needed.
+     * @return true if it's safe to continue (user saved or chose to discard changes),
+     *         false if the operation should be cancelled
+     */
+    public boolean checkUnsavedChanges() {
+        if (isModified() && currentFile != null) {
+            int choice = JOptionPane.showConfirmDialog(
+                    this,
+                    "The file '" + currentFile.getName() + "' has been modified. Save changes?",
+                    "Unsaved Changes",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            if (choice == JOptionPane.YES_OPTION) {
+                return saveCurrentFile();
+            } else return choice != JOptionPane.CANCEL_OPTION;
+        }
+        return true;
+    }
+
+    /**
+     * Saves the current file
+     * @return true if save was successful, false otherwise
+     */
+    public boolean saveCurrentFile() {
+        if (currentFile == null) return false;
+
+        try (FileWriter writer = new FileWriter(currentFile.getFile())) {
+            String content = textArea.getText();
+            writer.write(content);
+
+            // Update content in the SQLFile object
+            currentFile.setContent(content);
+
+            setModified(false);
+            return true;
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error saving file: " + e.getMessage(),
+                    "Save Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            return false;
+        }
+    }
+
+    public void setModified(boolean modified) {
+        this.modified = modified;
+        saveButton.setEnabled(modified);
+
+        // Update UI to show modified status (optional)
+        if (currentFile != null) {
+            String title = currentFile.getAbsolutePath();
+            if (modified) {
+                title += " *";
+            }
+            fileNameLabel.setText(title);
+        }
+    }
+
+    public boolean isModified() {
+        return modified;
     }
 
     public SQLFile getCurrentFile() {
