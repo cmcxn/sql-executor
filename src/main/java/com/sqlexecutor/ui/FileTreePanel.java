@@ -89,7 +89,16 @@ public class FileTreePanel extends JPanel {
         add(new JScrollPane(fileTree), BorderLayout.CENTER);
     }
 
-    public void loadFolder(File folder) {
+    /**
+     * Loads a folder into the file tree
+     * @param folder The folder to load
+     * @return true if the folder was loaded successfully, false otherwise
+     */
+    public boolean loadFolder(File folder) {
+        if (folder == null || !folder.exists() || !folder.isDirectory()) {
+            return false;
+        }
+
         this.currentFolder = folder;
         rootNode.removeAllChildren();
 
@@ -104,6 +113,22 @@ public class FileTreePanel extends JPanel {
         for (int i = 0; i < fileTree.getRowCount(); i++) {
             fileTree.expandRow(i);
         }
+
+        return true;
+    }
+
+    /**
+     * Loads a folder by path string
+     * @param folderPath Path to the folder
+     * @return true if the folder was loaded successfully, false otherwise
+     */
+    public boolean loadFolderByPath(String folderPath) {
+        if (folderPath == null || folderPath.trim().isEmpty()) {
+            return false;
+        }
+
+        File folder = new File(folderPath);
+        return loadFolder(folder);
     }
 
     private void loadFilesIntoNode(File folder, DefaultMutableTreeNode node) {
@@ -178,6 +203,22 @@ public class FileTreePanel extends JPanel {
 
     public void addFileSelectionListener(Consumer<File> listener) {
         fileSelectionListeners.add(listener);
+    }
+
+    /**
+     * Gets the current folder being displayed
+     * @return The current folder or null if no folder is loaded
+     */
+    public File getCurrentFolder() {
+        return currentFolder;
+    }
+
+    /**
+     * Gets the path of the current folder
+     * @return The absolute path of the current folder or null if no folder is loaded
+     */
+    public String getCurrentFolderPath() {
+        return currentFolder != null ? currentFolder.getAbsolutePath() : null;
     }
 
     // 保存文件数据和选择状态的类

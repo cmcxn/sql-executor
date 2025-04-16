@@ -1,6 +1,7 @@
 package com.sqlexecutor.ui;
 
 import com.sqlexecutor.model.DatabaseConfig;
+import com.sqlexecutor.util.ConfigManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -13,9 +14,10 @@ public class ConfigDialog extends JDialog {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JTextField databaseNameField;
+    private JCheckBox saveConfigCheckBox;
     private boolean confirmed = false;
     private DatabaseConfig databaseConfig;
-    
+
     public ConfigDialog(Frame owner, DatabaseConfig config) {
         super(owner, "Database Configuration", true);
         this.databaseConfig = new DatabaseConfig(
@@ -25,102 +27,112 @@ public class ConfigDialog extends JDialog {
                 config.getPassword(),
                 config.getDatabaseName()
         );
-        
+
         initializeUI();
         pack();
         setLocationRelativeTo(owner);
     }
-    
+
     private void initializeUI() {
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        
+
         // Host field
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(new JLabel("Host:"), gbc);
-        
+
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         hostField = new JTextField(databaseConfig.getHost(), 20);
         panel.add(hostField, gbc);
-        
+
         // Port field
         gbc.gridx = 0;
         gbc.gridy = 1;
         gbc.weightx = 0.0;
         panel.add(new JLabel("Port:"), gbc);
-        
+
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         portField = new JTextField(String.valueOf(databaseConfig.getPort()), 20);
         panel.add(portField, gbc);
-        
+
         // Username field
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.weightx = 0.0;
         panel.add(new JLabel("Username:"), gbc);
-        
+
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         usernameField = new JTextField(databaseConfig.getUsername(), 20);
         panel.add(usernameField, gbc);
-        
+
         // Password field
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.weightx = 0.0;
         panel.add(new JLabel("Password:"), gbc);
-        
+
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         passwordField = new JPasswordField(databaseConfig.getPassword(), 20);
         panel.add(passwordField, gbc);
-        
+
         // Database name field
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.weightx = 0.0;
         panel.add(new JLabel("Database:"), gbc);
-        
+
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         databaseNameField = new JTextField(databaseConfig.getDatabaseName(), 20);
         panel.add(databaseNameField, gbc);
-        
-        // Test connection button
+
+        // Save configuration checkbox
         gbc.gridx = 0;
         gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        saveConfigCheckBox = new JCheckBox("Save configuration for future sessions", true);
+        panel.add(saveConfigCheckBox, gbc);
+
+        // Test connection button
+        gbc.gridx = 0;
+        gbc.gridy = 6;
         gbc.gridwidth = 1;
         JButton testButton = new JButton("Test Connection");
         testButton.addActionListener(e -> testConnection());
         panel.add(testButton, gbc);
-        
+
         // Buttons panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton saveButton = new JButton("Save");
         JButton cancelButton = new JButton("Cancel");
-        
+
         saveButton.addActionListener(e -> {
             updateDatabaseConfig();
             confirmed = true;
+            if (saveConfigCheckBox.isSelected()) {
+                ConfigManager.saveConfig(databaseConfig);
+            }
             dispose();
         });
-        
+
         cancelButton.addActionListener(e -> dispose());
-        
+
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
-        
+
         // Add panels to dialog
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(panel, BorderLayout.CENTER);
         getContentPane().add(buttonPanel, BorderLayout.SOUTH);
     }
-    
+
     private void updateDatabaseConfig() {
         databaseConfig.setHost(hostField.getText());
         try {
@@ -132,17 +144,17 @@ public class ConfigDialog extends JDialog {
         databaseConfig.setPassword(new String(passwordField.getPassword()));
         databaseConfig.setDatabaseName(databaseNameField.getText());
     }
-    
+
     private void testConnection() {
         updateDatabaseConfig();
-        
+
         SwingWorker<Boolean, Void> worker = new SwingWorker<Boolean, Void>() {
             private String errorMessage;
-            
+
             @Override
             protected Boolean doInBackground() throws Exception {
                 try {
-                    com.sqlexecutor.util.DatabaseManager manager = 
+                    com.sqlexecutor.util.DatabaseManager manager =
                             new com.sqlexecutor.util.DatabaseManager(databaseConfig);
                     manager.testConnection();
                     return true;
@@ -151,7 +163,7 @@ public class ConfigDialog extends JDialog {
                     return false;
                 }
             }
-            
+
             @Override
             protected void done() {
                 try {
@@ -175,14 +187,14 @@ public class ConfigDialog extends JDialog {
                 }
             }
         };
-        
+
         worker.execute();
     }
-    
+
     public boolean isConfirmed() {
         return confirmed;
     }
-    
+
     public DatabaseConfig getDatabaseConfig() {
         return databaseConfig;
     }
