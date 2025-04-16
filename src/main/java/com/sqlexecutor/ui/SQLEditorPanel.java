@@ -84,22 +84,25 @@ public class SQLEditorPanel extends JPanel {
         // Add Save button
         saveButton = new JButton(LanguageManager.getString("mainwindow.save"));
         saveButton.setIcon(UIManager.getIcon("FileView.floppyDriveIcon"));
+        saveButton.setMnemonic(KeyEvent.VK_S); // Alt + S
         saveButton.setEnabled(false);
         saveButton.addActionListener(e -> saveCurrentFile());
         toolbar.add(saveButton);
 
         // Add separator
         toolbar.addSeparator();
-
-        JButton copyButton = new JButton(LanguageManager.getString("mainwindow.copy"));
-        copyButton.setIcon(UIManager.getIcon("FileView.fileIcon"));
-        copyButton.addActionListener(e -> textArea.copy());
+//
+//        JButton copyButton = new JButton(LanguageManager.getString("mainwindow.copy"));
+//        copyButton.setIcon(UIManager.getIcon("FileView.fileIcon"));
+//        copyButton.setMnemonic(KeyEvent.VK_S); // Alt + S
+//        copyButton.addActionListener(e -> textArea.copy());
 
         JButton wrapButton = new JButton(LanguageManager.getString("mainwindow.wrap"));
         wrapButton.setIcon(UIManager.getIcon("FileChooser.detailsViewIcon"));
+        wrapButton.setMnemonic(KeyEvent.VK_W); // Alt + W
         wrapButton.addActionListener(e -> textArea.setLineWrap(!textArea.getLineWrap()));
 
-        toolbar.add(copyButton);
+//        toolbar.add(copyButton);
         // Add separator
         toolbar.addSeparator();
 
