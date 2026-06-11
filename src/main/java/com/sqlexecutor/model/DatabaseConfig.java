@@ -8,6 +8,7 @@ public class DatabaseConfig {
     private String username;
     private String password;
     private String databaseName;
+    private String schema;
 
     public DatabaseConfig() {
         // Default values
@@ -16,6 +17,7 @@ public class DatabaseConfig {
         this.username = "postgres";
         this.password = "";
         this.databaseName = "postgres";
+        this.schema = "";
     }
 
     public DatabaseConfig(String host, int port, String username, String password, String databaseName) {
@@ -24,6 +26,16 @@ public class DatabaseConfig {
         this.username = username;
         this.password = password;
         this.databaseName = databaseName;
+        this.schema = "";
+    }
+
+    public DatabaseConfig(String host, int port, String username, String password, String databaseName, String schema) {
+        this.host = host;
+        this.port = port;
+        this.username = username;
+        this.password = password;
+        this.databaseName = databaseName;
+        this.schema = schema != null ? schema : "";
     }
 
     public String getHost() {
@@ -66,8 +78,20 @@ public class DatabaseConfig {
         this.databaseName = databaseName;
     }
 
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema != null ? schema : "";
+    }
+
     public String getJdbcUrl() {
-        return "jdbc:postgresql://" + host + ":" + port + "/" + databaseName;
+        String url = "jdbc:postgresql://" + host + ":" + port + "/" + databaseName;
+        if (schema != null && !schema.trim().isEmpty()) {
+            url += "?currentSchema=" + schema.trim();
+        }
+        return url;
     }
 
     public Properties getConnectionProperties() {
