@@ -15,6 +15,7 @@ public class ConfigDialog extends JDialog {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JTextField databaseNameField;
+    private JTextField schemaField;
     private JCheckBox saveConfigCheckBox;
     private boolean confirmed = false;
     private DatabaseConfig databaseConfig;
@@ -26,7 +27,8 @@ public class ConfigDialog extends JDialog {
                 config.getPort(),
                 config.getUsername(),
                 config.getPassword(),
-                config.getDatabaseName()
+                config.getDatabaseName(),
+                config.getSchema()
         );
 
         initializeUI();
@@ -94,16 +96,27 @@ public class ConfigDialog extends JDialog {
         databaseNameField = new JTextField(databaseConfig.getDatabaseName(), 20);
         panel.add(databaseNameField, gbc);
 
-        // Save configuration checkbox
+        // Schema field
         gbc.gridx = 0;
         gbc.gridy = 5;
+        gbc.weightx = 0.0;
+        panel.add(new JLabel(LanguageManager.getString("connection.schema")), gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        schemaField = new JTextField(databaseConfig.getSchema(), 20);
+        panel.add(schemaField, gbc);
+
+        // Save configuration checkbox
+        gbc.gridx = 0;
+        gbc.gridy = 6;
         gbc.gridwidth = 2;
         saveConfigCheckBox = new JCheckBox("Save configuration for future sessions", true);
         panel.add(saveConfigCheckBox, gbc);
 
         // Test connection button
         gbc.gridx = 0;
-        gbc.gridy = 6;
+        gbc.gridy = 7;
         gbc.gridwidth = 1;
         JButton testButton = new JButton(LanguageManager.getString("connection.test"));
         testButton.addActionListener(e -> testConnection());
@@ -144,6 +157,7 @@ public class ConfigDialog extends JDialog {
         databaseConfig.setUsername(usernameField.getText());
         databaseConfig.setPassword(new String(passwordField.getPassword()));
         databaseConfig.setDatabaseName(databaseNameField.getText());
+        databaseConfig.setSchema(schemaField.getText());
     }
 
     private void testConnection() {

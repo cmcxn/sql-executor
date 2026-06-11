@@ -25,6 +25,7 @@ public class ConfigManager {
         props.setProperty("username", config.getUsername());
         props.setProperty("password", config.getPassword());
         props.setProperty("databaseName", config.getDatabaseName());
+        props.setProperty("schema", config.getSchema() != null ? config.getSchema() : "");
 
         // Save folder path if not null
         if (folderPath != null) {
@@ -64,8 +65,9 @@ public class ConfigManager {
             String username = props.getProperty("username", "postgres");
             String password = props.getProperty("password", "");
             String databaseName = props.getProperty("databaseName", "postgres");
+            String schema = props.getProperty("schema", "");
 
-            return new DatabaseConfig(host, port, username, password, databaseName);
+            return new DatabaseConfig(host, port, username, password, databaseName, schema);
         } catch (IOException | NumberFormatException e) {
             System.err.println("Failed to load configuration: " + e.getMessage());
             return new DatabaseConfig(); // Return default config on error
